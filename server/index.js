@@ -20,11 +20,19 @@ app.use(cors({
   origin: function (origin, callback) {
     // origin이 없는 경우 (서버 간 요청, curl 등) 허용
     if (!origin) return callback(null, true);
+    // 명시적으로 허용된 도메인
     if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS 정책에 의해 차단되었습니다."));
+      return callback(null, true);
     }
+    // Vercel 프리뷰/배포 URL 허용 (.vercel.app 서브도메인)
+    if (origin.endsWith(".vercel.app")) {
+      return callback(null, true);
+    }
+    // localhost 개발 환경 허용
+    if (origin.startsWith("http://localhost:")) {
+      return callback(null, true);
+    }
+    callback(new Error("CORS 정책에 의해 차단되었습니다."));
   },
   credentials: true,
 }));
